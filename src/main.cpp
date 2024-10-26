@@ -1,13 +1,132 @@
 // main.cpp
 
 #include <iostream>
+#include <string>
 #include <vector>
 #include <map>
 #include <memory>
-#include "Product.h"
-#include "Electronic.h"
-#include "Clothing.h"
-#include "Book.h"
+
+// Base class: Product
+class Product {
+protected:
+    std::string name;
+    double price;
+    std::string description;
+
+public:
+    Product(const std::string& name, double price, const std::string& description)
+        : name(name), price(price), description(description) {}
+
+    virtual ~Product() {}
+
+    virtual double calculateCost(int quantity) const {
+        return price * quantity;
+    }
+
+    virtual std::string toString() const {
+        return name + "\n\t- " + description + "\n\t- Price: $" + std::to_string(price);
+    }
+
+    const std::string& getName() const {
+        return name;
+    }
+};
+
+// Derived class: Electronic
+class Electronic : public Product {
+private:
+    double warrantyCost;
+
+public:
+    Electronic(const std::string& name, double price, const std::string& description, double warrantyCost)
+        : Product(name, price, description), warrantyCost(warrantyCost) {}
+
+    double calculateCost(int quantity) const override {
+        double totalWarranty = warrantyCost * quantity * 0.5;
+        return (price * quantity) + totalWarranty;
+    }
+
+    std::string toString() const override {
+        return name + " (Electronic)\n\t- " + description +
+               "\n\t- Price: $" + std::to_string(price) +
+               "\n\t- Warranty: $" + std::to_string(warrantyCost);
+    }
+};
+
+// Enums for Clothing
+enum class Size { Small, Medium, Large };
+enum class Material { Cotton, Leather, Linen };
+
+// Derived class: Clothing
+class Clothing : public Product {
+private:
+    Size size;
+    Material material;
+
+public:
+    Clothing(const std::string& name, double price, const std::string& description, Size size, Material material)
+        : Product(name, price, description), size(size), material(material) {}
+
+    double calculateCost(int quantity) const override {
+        double sizeMultiplier = 1.0;
+        if (size == Size::Small)
+            sizeMultiplier = 0.5;
+        else if (size == Size::Large)
+            sizeMultiplier = 1.5;
+
+        double materialMultiplier = 1.0;
+        if (material == Material::Cotton)
+            materialMultiplier = 1.2;
+        else if (material == Material::Leather)
+            materialMultiplier = 1.4;
+        else if (material == Material::Linen)
+            materialMultiplier = 2.0;
+
+        return price * quantity * sizeMultiplier * materialMultiplier;
+    }
+
+    std::string toString() const override {
+        return name + " (Clothing)\n\t- " + description +
+               "\n\t- Price: $" + std::to_string(price) +
+               "\n\t- Size: " + sizeToString(size) +
+               "\n\t- Material: " + materialToString(material);
+    }
+
+private:
+    std::string sizeToString(Size s) const {
+        switch (s) {
+            case Size::Small: return "Small";
+            case Size::Medium: return "Medium";
+            case Size::Large: return "Large";
+            default: return "Unknown";
+        }
+    }
+
+    std::string materialToString(Material m) const {
+        switch (m) {
+            case Material::Cotton: return "Cotton";
+            case Material::Leather: return "Leather";
+            case Material::Linen: return "Linen";
+            default: return "Unknown";
+        }
+    }
+};
+
+// Derived class: Book
+class Book : public Product {
+private:
+    std::string author;
+
+public:
+    Book(const std::string& name, double price, const std::string& description, const std::string& author)
+        : Product(name, price, description), author(author) {}
+
+    std::string toString() const override {
+        return name + " (Book)\n\t- " + description +
+               "\n\t- Author: " + author +
+               "\n\t- Price: $" + std::to_string(price);
+    }
+};
 
 int main() {
     std::cout << "Hi, welcome to SomeMart.\n";
