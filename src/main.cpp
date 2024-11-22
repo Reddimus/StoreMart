@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <iomanip>
+#include <sstream>
 
 // Base class: Product
 class Product {
@@ -24,7 +26,10 @@ public:
     }
 
     virtual std::string toString() const {
-        return name + "\n\t- " + description + "\n\t- Price: $" + std::to_string(price);
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2);
+        oss << name << "\n\t- " << description << "\n\t- Price: $" << price;
+        return oss.str();
     }
 
     const std::string& getName() const {
@@ -47,9 +52,12 @@ public:
     }
 
     std::string toString() const override {
-        return name + " (Electronic)\n\t- " + description +
-               "\n\t- Price: $" + std::to_string(price) +
-               "\n\t- Warranty: $" + std::to_string(warrantyCost);
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2);
+        oss << name << " (Electronic)\n\t- " << description
+            << "\n\t- Price: $" << price
+            << "\n\t- Warranty: $" << warrantyCost;
+        return oss.str();
     }
 };
 
@@ -86,10 +94,13 @@ public:
     }
 
     std::string toString() const override {
-        return name + " (Clothing)\n\t- " + description +
-               "\n\t- Price: $" + std::to_string(price) +
-               "\n\t- Size: " + sizeToString(size) +
-               "\n\t- Material: " + materialToString(material);
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2);
+        oss << name << " (Clothing)\n\t- " << description
+            << "\n\t- Price: $" << price
+            << "\n\t- Size: " << sizeToString(size)
+            << "\n\t- Material: " << materialToString(material);
+        return oss.str();
     }
 
 private:
@@ -122,9 +133,12 @@ public:
         : Product(name, price, description), author(author) {}
 
     std::string toString() const override {
-        return name + " (Book)\n\t- " + description +
-               "\n\t- Author: " + author +
-               "\n\t- Price: $" + std::to_string(price);
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2);
+        oss << name << " (Book)\n\t- " << description
+            << "\n\t- Author: " << author
+            << "\n\t- Price: $" << price;
+        return oss.str();
     }
 };
 
@@ -134,10 +148,12 @@ int main() {
     std::vector<std::shared_ptr<Product>> products = {
         std::make_shared<Electronic>("Washing Machine", 500.0, "It's OK at washing clothes.", 100.0),
         std::make_shared<Clothing>("T Shirt", 20.0, "The best outdoor wear.", Size::Medium, Material::Cotton),
+        std::make_shared<Clothing>("Leather Jacket", 100.0, "A stylish leather jacket.", Size::Large, Material::Leather),
+        std::make_shared<Clothing>("Linen Pants", 50.0, "Comfortable linen pants.", Size::Small, Material::Linen),
         std::make_shared<Book>("I Spy", 10.0, "A classic amongst children.", "John Doe")
     };
 
-    std::map<int, int> cart; // product index to quantity
+    std::vector<int> cart(products.size(), 0);
 
     while (true) {
         std::cout << "Here is what we are currently selling:\n";
@@ -150,7 +166,7 @@ int main() {
 
         if (choice == 0) {
             break;
-        } else if (choice < 1 || choice > static_cast<int>(products.size())) {
+        } else if (choice < 1 || choice > products.size()) {
             std::cout << "Invalid choice. Please try again.\n";
             continue;
         }
@@ -169,19 +185,23 @@ int main() {
         std::cout << "I've added " << quantity << " of \"" << products[index]->getName() << "\" to your cart.\n";
     }
 
+    // Print out the cart
     if (!cart.empty()) {
         double totalCost = 0.0;
+        std::cout << std::fixed << std::setprecision(2); // Set format for output
         std::cout << "Okay, your total comes out to:\n";
-        for (const auto& item : cart) {
-            int index = item.first;
-            int quantity = item.second;
-            double cost = products[index]->calculateCost(quantity);
+        for (size_t productIdx = 0; productIdx < products.size(); ++productIdx) {
+            int quantity = cart[productIdx];
+            if (quantity == 0)
+                continue;
+
+            double cost = products[productIdx]->calculateCost(quantity);
             totalCost += cost;
-            std::cout << "- " << quantity << " of \"" << products[index]->getName() << "\": $" << cost << "\n";
+            std::cout << "- " << quantity << " of \"" << products[productIdx]->getName() << "\": $" << cost << "\n";
         }
         std::cout << "Total: $" << totalCost << "\n";
     } else {
-        std::cout << "You did not purchase anything.\n";
+        std::cout << "There are no available products in your cart.\n";
     }
 
     return 0;
